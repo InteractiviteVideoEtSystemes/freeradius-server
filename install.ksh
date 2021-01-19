@@ -32,11 +32,12 @@ function create_rpm
     mkdir -p rpmbuild/RPMS/x86_64
     #Recuperation de la description du package 
     cd ./rpmbuild/SPECS/
-    cp ../../${PROJET}.spec ${PROJET}.spec
+    cp ../../redhat/${PROJET}.spec ${PROJET}.spec
     cd ../SOURCES
     cp ../../redhat/freeradius-radiusd-init .
     cp ../../redhat/freeradius-logrotate .
     cp ../../redhat/freeradius-pam-conf .
+    cp ../../redhat/freeradius-cert-config.patch .
     ln -s ../.. ${PROJET}
 
     cd ../../
@@ -58,8 +59,8 @@ function create_rpm
 function clean
 {
   	# On efface les liens ainsi que le package precedemment créé
-  	echo Effacement des fichiers et liens gnupg rpmbuild ${PROJET}.rpm ${TEMPDIR}/${PROJET}
-  	rm -rf gnupg rpmbuild  ${TEMPDIR}/${PROJET}
+  	echo Effacement des fichiers et liens gnupg rpmbuild ${PROJET}.rpm 
+  	rm -rf gnupg rpmbuild 
 }
 
 case $1 in

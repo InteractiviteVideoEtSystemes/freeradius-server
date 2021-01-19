@@ -12,6 +12,7 @@
 *.orig
 *.rej
 *.dSYM
+*.rpm
 .libs
 .depends
 config.log
