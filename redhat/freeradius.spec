@@ -116,7 +116,7 @@ This plugin provides the Python support for the FreeRADIUS server project.
 Summary: MySQL support for freeradius
 Group: System Environment/Daemons
 Requires: %{name} = %{version}-%{release}
-BuildRequires: mysql-devel
+BuildRequires: MariaDB-devel
 
 %description mysql
 This plugin provides the MySQL support for the FreeRADIUS server project.
@@ -141,7 +141,6 @@ This plugin provides the unixODBC support for the FreeRADIUS server project.
 
 
 %prep
-%setup -q -n freeradius-server-%{version}
 %patch1 -p1 -b .cert-config
 
 # Some source files mistakenly have execute permissions set

@@ -1417,7 +1417,71 @@ static int rlm_sql_accounting(void *instance, REQUEST * request) {
 				(inst->module->sql_finish_query)(sqlsocket, inst->config);
 			}
 			break;
+			/*	IVES Process failed record	*/
+			case 15:
 
+			/*
+			 * Set, escape, and check the user attr here
+			 */
+			sql_set_user(inst, request, sqlusername, NULL);
+
+			radius_xlat(querystr, sizeof(querystr), inst->config->accounting_start_query, request, sql_escape_func);
+			query_log(request, inst, querystr);
+
+			sqlsocket = sql_get_socket(inst);
+			if (sqlsocket == NULL)
+				return(RLM_MODULE_FAIL);
+			if (*querystr) { /* non-empty query */
+				if (rlm_sql_query(sqlsocket, inst, querystr)) {
+					radlog_request(L_ERR, 0, request, "Couldn't update SQL accounting FAILED record - %s",
+					       (inst->module->sql_error)(sqlsocket, inst->config));
+					ret = RLM_MODULE_FAIL;
+				}
+				else {
+					numaffected = (inst->module->sql_affected_rows)(sqlsocket, inst->config);
+					if (numaffected < 1) {
+						/*
+						 * If our update above didn't match anything
+						 * we assume it's because we haven't seen a
+						 * matching Start record.  So we have to
+						 * insert this stop rather than do an update
+						 */
+#ifdef CISCO_ACCOUNTING_HACK
+					        /*
+					         * If stop but zero session length AND no previous
+					         * session found, drop it as in invalid packet
+				        	 * This is to fix CISCO's aaa from filling our
+				        	 * table with bogus crap
+					         */
+					        if ((pair = pairfind(request->packet->vps, PW_ACCT_SESSION_TIME)) != NULL)
+					                acctsessiontime = pair->vp_integer;
+
+						if (acctsessiontime <= 0) {
+							radius_xlat(logstr, sizeof(logstr), "stop packet with zero session length. [user '%{User-Name}', nas '%{NAS-IP-Address}']", request, NULL);
+							radlog_request(L_ERR, 0, request, "%s", logstr);
+							sql_release_socket(inst, sqlsocket);
+							ret = RLM_MODULE_NOOP;
+						}
+#endif
+
+						radius_xlat(querystr, sizeof(querystr), inst->config->accounting_start_query_alt, request, sql_escape_func);
+						query_log(request, inst, querystr);
+
+						if (*querystr) { /* non-empty query */
+							if (rlm_sql_query(sqlsocket, inst, querystr)) {
+								radlog_request(L_ERR, 0, request, "Couldn't insert SQL accounting FAILED record - %s",
+
+								       (inst->module->sql_error)(sqlsocket, inst->config));
+								ret = RLM_MODULE_FAIL;
+							}
+							(inst->module->sql_finish_query)(sqlsocket, inst->config);
+						}
+					}
+				}
+				(inst->module->sql_finish_query)(sqlsocket, inst->config);
+			}
+			break;
+			
 			/*
 			 *	Anything else is ignored.
 			 */
