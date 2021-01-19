@@ -152,7 +152,7 @@ export CFLAGS="$RPM_OPT_FLAGS -fPIC"
 %else
 export CFLAGS="$RPM_OPT_FLAGS -fpic"
 %endif
-
+cd $RPM_SOURCE_DIR/%name
 %configure \
         --libdir=%{_libdir}/freeradius \
         --with-system-libtool \
@@ -184,6 +184,7 @@ perl -pi -e 's:sys_lib_search_path_spec=.*:sys_lib_search_path_spec="/lib64 /usr
 make LINK_MODE=-pie
 
 %install
+cd $RPM_SOURCE_DIR/%name
 mkdir -p $RPM_BUILD_ROOT/%{_localstatedir}/lib/radiusd
 # fix for bad libtool bug - can not rebuild dependent libs and bins
 #FIXME export LD_LIBRARY_PATH=$RPM_BUILD_ROOT/%{_libdir}
@@ -241,6 +242,12 @@ Please reference that document.
 
 EOF
 
+%clean
+cd $RPM_SOURCE_DIR/%name
+make clean
+cd ..
+#remove symbolic link installed by install.ksh
+rm -f %name
 
 # Make sure our user/group is present prior to any package or subpackage installation
 %pre
