@@ -142,7 +142,7 @@ This plugin provides the unixODBC support for the FreeRADIUS server project.
 
 %prep
 cd $RPM_SOURCE_DIR/%name
-%patch1 -p1 -b .cert-config
+#%patch1 -p1 -b .cert-config
 
 # Some source files mistakenly have execute permissions set
 find $RPM_SOURCE_DIR/%name \( -name '*.c' -o -name '*.h' \) -a -perm /0111 -exec chmod a-x {} +
